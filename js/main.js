@@ -31,12 +31,16 @@ setTimeout(() => {
 
 gsap.registerPlugin(ScrollTrigger);
 
+const TOUCH = window.matchMedia("(hover: none)").matches;
+
 let lenis = null;
 try {
-  lenis = new Lenis({ duration: 1.15, smoothWheel: true, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
-  lenis.on("scroll", ScrollTrigger.update);
-  gsap.ticker.add(t => lenis.raf(t * 1000));
-  gsap.ticker.lagSmoothing(0);
+  if (!TOUCH) {
+    lenis = new Lenis({ duration: 1.15, smoothWheel: true, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+    lenis.on("scroll", ScrollTrigger.update);
+    gsap.ticker.add(t => lenis.raf(t * 1000));
+    gsap.ticker.lagSmoothing(0);
+  }
 } catch (e) {
 }
 const SY = () => (lenis ? lenis.scroll : 0) || window.scrollY || 0;
@@ -81,7 +85,9 @@ function beginExperience() {
   const loader = $("#loader");
   if (!loader) return;
   if (REDUCED) {
-    loader.remove();
+    gsap.set(".w", { opacity: 1, y: 0 });
+    gsap.to(loader, { opacity: 0, duration: 0.6, delay: 1.6, onComplete: () => loader.remove() });
+    heroIntro();
     return;
   }
 
@@ -178,6 +184,7 @@ $$("[data-lenis]").forEach(a => {
 });
 
 (function stars() {
+  if (TOUCH) return;
   const cv = $("#stars");
   const ctx = cv.getContext("2d");
   let W, H, stars = [];

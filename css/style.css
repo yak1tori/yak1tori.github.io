@@ -97,6 +97,8 @@ img{display:block;max-width:100%}
   position:fixed;inset:0;z-index:500;background:#000;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:24px;
+  -webkit-transform:translateZ(0);
+  transform:translateZ(0);
 }
 .loader-lyrics{
   position:absolute;inset:0;display:grid;place-items:center;
@@ -687,8 +689,23 @@ html[data-status=offline]{--st-c:rgba(235,235,235,.5)}
   .fs-progress{width:100%}
   .fs-vol{justify-content:center}
   .fs-vol input[type=range]{width:120px}
+
+  #stars{display:none}
+  .bg-photo{filter:blur(30px) saturate(1.15) brightness(.6);transform:scale(1.12)}
+  .bg-status{mix-blend-mode:normal;opacity:.4}
+  .bg-grain{animation:none}
+  .glass{-webkit-backdrop-filter:blur(8px) saturate(150%);backdrop-filter:blur(8px) saturate(150%)}
+  .nav.scrolled{-webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%)}
+  .player{-webkit-backdrop-filter:blur(14px) saturate(170%);backdrop-filter:blur(14px) saturate(170%)}
+  .fs{-webkit-backdrop-filter:blur(12px) saturate(150%);backdrop-filter:blur(12px) saturate(150%)}
+  .start-btn{-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 }
 @media(max-width:560px){
+  .nav{padding:14px 14px}
+  .nav-logo{font-size:1.05rem}
+  .nav-right{gap:8px}
+  .theme-btn{width:36px;height:36px}
+  .nav-dc{padding:8px 12px;font-size:10px}
   .hero-badges{gap:8px}
   .badge{padding:7px 12px;font-size:9.5px}
   .hero{padding-top:110px}
