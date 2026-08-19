@@ -338,6 +338,7 @@ $$(".count").forEach(el => {
 
   const setStatus = (st) => {
     const cls = STATUS_CLS[st] || "off";
+    document.documentElement.dataset.status = st || "offline";
     $("#dcStatusDot").className = "dc-statusdot " + cls;
     $("#heroDot").className = "dot dot--" + cls;
     const nd = $(".nav-dc .dot");
@@ -442,6 +443,7 @@ $$(".count").forEach(el => {
   const LS_VOL = "yk_vol";
   audio.volume = parseFloat(localStorage.getItem(LS_VOL) || "0.8");
   $("#pVol").value = audio.volume;
+  $("#fsVol").value = audio.volume;
 
   const playBtn = $("#pPlay");
   const prevBtn = $("#pPrev");
@@ -453,6 +455,20 @@ $$(".count").forEach(el => {
   const pTitle = $("#pTitle");
   const pArtist = $("#pArtist");
   const cover = $("#pCoverImg");
+  const bgPhoto = $(".bg-photo");
+  const fs = $("#fs");
+  const fsTitle = $("#fsTitle");
+  const fsArtist = $("#fsArtist");
+  const fsCover = $("#fsCover");
+  const fsCur = $("#fsCur");
+  const fsDur = $("#fsDur");
+  const fsFill = $("#fsFill");
+  const fsBar = $("#fsBar");
+  const fsVol = $("#fsVol");
+  const fsClose = $("#fsClose");
+  const fsPlay = $("#fsPlay");
+  const fsPrev = $("#fsPrev");
+  const fsNext = $("#fsNext");
 
   const fmt = s => {
     if (!isFinite(s) || s < 0) s = 0;
@@ -607,9 +623,16 @@ $$(".count").forEach(el => {
     pTitle.textContent = tr.title;
     pArtist.textContent = tr.artist;
     cover.src = tr.cover;
+    fsTitle.textContent = tr.title;
+    fsArtist.textContent = tr.artist;
+    fsCover.src = tr.cover;
     durEl.textContent = "0:00";
     curEl.textContent = "0:00";
+    fsDur.textContent = "0:00";
+    fsCur.textContent = "0:00";
     fill.style.width = "0%";
+    fsFill.style.width = "0%";
+    bgPhoto.style.opacity = "0";
     gsap.fromTo(".p-cover", { rotate: -6, scale: 0.92 }, { rotate: 0, scale: 1, duration: 0.6, ease: "power3.out" });
     gsap.fromTo(".p-meta", { x: -12, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power3.out" });
   };
@@ -621,20 +644,33 @@ $$(".count").forEach(el => {
     audio.src = tr.src;
     syncBass();
     setMeta(queue[pos]);
+    const g = "linear-gradient(180deg,#0a0b10 0%,#070708 34%,#050505 60%,#000 100%)";
+    bgPhoto.style.opacity = "0";
+    requestAnimationFrame(() => {
+      bgPhoto.style.backgroundImage = `url("${tr.cover}"),${g}`;
+      requestAnimationFrame(() => { bgPhoto.style.opacity = "1"; });
+    });
     prevBtn.disabled = nextBtn.disabled = queue.length <= 1;
     if (autoplay) audio.play().catch(() => {});
   };
 
   const setPlaying = (p) => {
     $("#player").classList.toggle("is-playing", p);
+    fs.classList.toggle("is-playing", p);
   };
 
   audio.addEventListener("loadedmetadata", () => {
     durEl.textContent = fmt(audio.duration);
+    fsDur.textContent = fmt(audio.duration);
   });
   audio.addEventListener("timeupdate", () => {
     curEl.textContent = fmt(audio.currentTime);
-    if (audio.duration) fill.style.width = (audio.currentTime / audio.duration * 100) + "%";
+    fsCur.textContent = fmt(audio.currentTime);
+    if (audio.duration) {
+      const w = (audio.currentTime / audio.duration * 100) + "%";
+      fill.style.width = w;
+      fsFill.style.width = w;
+    }
   });
   audio.addEventListener("play", () => setPlaying(true));
   audio.addEventListener("pause", () => setPlaying(false));
@@ -675,7 +711,56 @@ $$(".count").forEach(el => {
 
   $("#pVol").addEventListener("input", e => {
     audio.volume = +e.target.value;
+    fsVol.value = e.target.value;
     localStorage.setItem(LS_VOL, e.target.value);
+  });
+
+  const syncFs = () => {
+    fsTitle.textContent = pTitle.textContent;
+    fsArtist.textContent = pArtist.textContent;
+    fsCover.src = cover.src;
+    fsCur.textContent = curEl.textContent;
+    fsDur.textContent = durEl.textContent;
+    fsFill.style.width = fill.style.width;
+    fsVol.value = audio.volume;
+    fs.classList.toggle("is-playing", !audio.paused);
+  };
+  const openFs = () => {
+    syncFs();
+    fs.classList.add("open");
+    fs.setAttribute("aria-hidden", "false");
+    if (lenis) lenis.stop();
+    fsClose.focus();
+  };
+  const closeFs = () => {
+    fs.classList.remove("open");
+    fs.setAttribute("aria-hidden", "true");
+    if (lenis) lenis.start();
+  };
+
+  $("#player").addEventListener("click", e => {
+    if (e.target.closest(".p-btn,.p-vol,.p-bar")) return;
+    openFs();
+  });
+  fsClose.addEventListener("click", closeFs);
+  fs.addEventListener("click", e => {
+    if (e.target === fs) closeFs();
+  });
+  fsPlay.addEventListener("click", () => playBtn.click());
+  fsPrev.addEventListener("click", () => prevBtn.click());
+  fsNext.addEventListener("click", () => nextBtn.click());
+  fsBar.addEventListener("click", e => {
+    if (!audio.duration) return;
+    const r = fsBar.getBoundingClientRect();
+    audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+  });
+  fsVol.addEventListener("input", e => {
+    audio.volume = +e.target.value;
+    $("#pVol").value = e.target.value;
+    localStorage.setItem(LS_VOL, e.target.value);
+  });
+  document.addEventListener("keydown", e => {
+    if (e.code === "Escape" && fs.classList.contains("open")) closeFs();
   });
 
   document.addEventListener("keydown", e => {
@@ -724,6 +809,17 @@ const PH_COVER = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
 
 $("#dcAvatar").onerror = () => { $("#dcAvatar").src = PH_AVATAR; };
 $("#sceneAvatar").onerror = () => { $("#sceneAvatar").src = PH_AVATAR; };
+
+(function theme() {
+  const btn = $("#themeBtn");
+  const apply = t => document.documentElement.classList.toggle("light", t === "light");
+  apply(localStorage.getItem("yk_theme") || "dark");
+  btn.addEventListener("click", () => {
+    const light = !document.documentElement.classList.contains("light");
+    apply(light ? "light" : "dark");
+    localStorage.setItem("yk_theme", light ? "light" : "dark");
+  });
+})();
 
 (function boot() {
   const btn = $("#startBtn");
