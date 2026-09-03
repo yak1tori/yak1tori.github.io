@@ -435,12 +435,15 @@ $$(".count").forEach(el => {
 
   const poll = () => {
     fetch(LANYARD_URL)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      })
       .then(j => {
         if (j.success && j.data) {
           render(j.data);
         } else {
-          const msg = "discord не подключён — открой lanyard.nekos.im";
+          const msg = "discord не подключён";
           $("#dcStatusText").textContent = msg;
           $("#heroStatus").textContent = msg;
           $("#sceneActivity").textContent = "discord не подключён";
@@ -449,7 +452,15 @@ $$(".count").forEach(el => {
           $("#heroDot").className = "dot dot--off";
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        const msg = "discord недоступен";
+        $("#dcStatusText").textContent = msg;
+        $("#heroStatus").textContent = msg;
+        $("#sceneActivity").textContent = "ошибка подключения";
+        $("#sceneSub").textContent = "попробуй перезагрузить страницу";
+        $("#dcStatusDot").className = "dc-statusdot off";
+        $("#heroDot").className = "dot dot--off";
+      });
   };
   poll();
   setInterval(poll, 45000);
