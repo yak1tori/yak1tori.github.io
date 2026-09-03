@@ -499,6 +499,10 @@ $$(".count").forEach(el => {
   let wasPlaying = false;
   let readyResolve;
   const queueReady = new Promise(r => { readyResolve = r; });
+  let canPlayResolve;
+  const canPlay = new Promise(r => { canPlayResolve = r; });
+  const canPlayTimeout = new Promise(r => setTimeout(r, 8000));
+  const canPlayReady = Promise.race([canPlay, canPlayTimeout]);
   let bassApi = null;
 
   
@@ -693,6 +697,7 @@ $$(".count").forEach(el => {
   audio.addEventListener("play", () => setPlaying(true));
   audio.addEventListener("pause", () => setPlaying(false));
   audio.addEventListener("ended", () => load(1, true));
+  audio.addEventListener("canplaythrough", () => { if (canPlayResolve) canPlayResolve(); canPlayResolve = null; }, { once: true });
   audio.addEventListener("error", () => {
     queue = queue.filter(i => TRACKS[i].src !== audio.src);
     if (queue.length) {
@@ -806,7 +811,7 @@ $$(".count").forEach(el => {
       }
     }),
     initBass,
-    ready: queueReady
+    ready: Promise.all([queueReady, canPlayReady])
   };
 })();
 
