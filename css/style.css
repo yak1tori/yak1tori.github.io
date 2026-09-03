@@ -442,6 +442,29 @@ html[data-status=offline]{--st-c:rgba(235,235,235,.5)}
 .s-name{font-family:var(--font-head);font-weight:700;font-size:1.05rem;letter-spacing:-.01em}
 .s-handle{font-family:var(--font-mono);font-size:11px;color:var(--faint);letter-spacing:.05em;margin-top:-10px}
 
+.friends-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+.friend-card{
+  display:flex;flex-direction:row;align-items:center;gap:18px;
+  padding:22px 26px;border-radius:26px;overflow:hidden;
+  transition:transform .4s var(--ease),border-color .4s var(--ease);
+}
+.friend-card:hover{transform:translateY(-8px)}
+.friend-avatar-wrap{flex:none}
+.friend-avatar{
+  width:68px;height:68px;border-radius:50%;object-fit:cover;
+  box-shadow:0 0 0 2px rgba(255,255,255,.16),0 8px 30px -8px rgba(0,0,0,.8);
+  transition:box-shadow .4s var(--ease),transform .4s var(--ease);
+}
+.friend-avatar::-webkit-media-controls{display:none!important}
+.friend-avatar::-webkit-media-controls-panel{display:none!important}
+.friend-card:hover .friend-avatar{
+  box-shadow:0 0 0 2px rgba(255,255,255,.3),0 12px 40px -6px rgba(0,0,0,.9);
+  transform:scale(1.08);
+}
+.friend-info{display:flex;flex-direction:column;gap:4px;min-width:0}
+.friend-name{font-family:var(--font-head);font-weight:700;font-size:1.05rem;letter-spacing:-.01em;color:#fff}
+.friend-handle{font-family:var(--font-mono);font-size:11px;color:var(--dim);letter-spacing:.06em;text-transform:none}
+
 .footer{
   border-top:1px solid var(--line);
   padding:clamp(90px,14vh,160px) clamp(24px,6vw,80px) clamp(170px,20vh,220px);
@@ -836,3 +859,5 @@ html.light .fs-vol input[type=range]::-moz-range-thumb{background:#171717;box-sh
 
 html.light .footer-logo{color:#171717}
 html.light .btt{box-shadow:0 24px 80px -24px rgba(0,0,0,.3)}
+html.light .friend-name{color:#171717}
+html.light .friend-avatar{box-shadow:0 0 0 2px rgba(255,255,255,.9),0 8px 30px -8px rgba(0,0,0,.35)}

@@ -304,6 +304,17 @@ $$("[data-reveal]").forEach(el => {
     });
 })();
 
+(function friends() {
+  const grid = $("#friendsGrid");
+  if (!grid) return;
+  gsap.fromTo($$(".friend-card", grid),
+    { y: 90, opacity: 0 },
+    {
+      y: 0, opacity: 1, duration: 0.9, ease: "power3.out", stagger: 0.09,
+      scrollTrigger: { trigger: grid, start: "top 78%" }
+    });
+})();
+
 $$(".count").forEach(el => {
   const target = +el.dataset.count;
   const obj = { v: 0 };
@@ -446,7 +457,7 @@ $$(".count").forEach(el => {
 
 (function player() {
   const audio = new Audio();
-  audio.preload = "metadata";
+  audio.preload = "auto";
   const LS_VOL = "yk_vol";
   audio.volume = parseFloat(localStorage.getItem(LS_VOL) || "0.8");
   $("#pVol").value = audio.volume;
@@ -794,7 +805,8 @@ $$(".count").forEach(el => {
         if (bassEl && bassEl.src) bassEl.play().catch(() => {});
       }
     }),
-    initBass
+    initBass,
+    ready: queueReady
   };
 })();
 
@@ -837,15 +849,22 @@ $("#sceneAvatar").onerror = () => { $("#sceneAvatar").src = PH_AVATAR; };
     return;
   }
   btn.addEventListener("click", () => {
-    if (P) {
-      P.initBass();
-      P.play();
+    const start = () => {
+      if (P) {
+        P.initBass();
+        P.play();
+      }
+      beginExperience();
+      gsap.to(btn, {
+        opacity: 0, y: 16, duration: 0.45, ease: "power2.out",
+        onComplete: () => btn.remove()
+      });
+    };
+    if (P && P.ready) {
+      P.ready.then(start);
+    } else {
+      start();
     }
-    beginExperience();
-    gsap.to(btn, {
-      opacity: 0, y: 16, duration: 0.45, ease: "power2.out",
-      onComplete: () => btn.remove()
-    });
   });
 })();
 $("#pCoverImg").onerror = () => { $("#pCoverImg").src = PH_COVER; };
