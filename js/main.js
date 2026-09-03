@@ -806,12 +806,15 @@ $$(".count").forEach(el => {
   window.__player = {
     play: () => queueReady.then(() => {
       if (audio.src && audio.paused) {
-        audio.play().catch(() => {});
-        if (bassEl && bassEl.src) bassEl.play().catch(() => {});
+        return audio.play().catch(() => {});
       }
     }),
     initBass,
-    ready: Promise.all([queueReady, canPlayReady])
+    ready: Promise.all([queueReady, canPlayReady]),
+    playing: new Promise(r => {
+      audio.addEventListener("playing", () => r(), { once: true });
+      setTimeout(r, 10000);
+    })
   };
 })();
 
@@ -858,8 +861,12 @@ $("#sceneAvatar").onerror = () => { $("#sceneAvatar").src = PH_AVATAR; };
       if (P) {
         P.initBass();
         P.play();
+        P.playing.then(() => {
+          beginExperience();
+        });
+      } else {
+        beginExperience();
       }
-      beginExperience();
       gsap.to(btn, {
         opacity: 0, y: 16, duration: 0.45, ease: "power2.out",
         onComplete: () => btn.remove()
